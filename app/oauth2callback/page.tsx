@@ -1,16 +1,15 @@
 "use client";
 export const dynamic = "force-dynamic";
 
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { toast } from "sonner";
 
-export default function OAuth2Callback() {
+function OAuth2CallbackInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const code = searchParams.get("code");
-
     if (!code) {
       toast.error("Missing authorization code");
       return;
@@ -18,12 +17,15 @@ export default function OAuth2Callback() {
 
     async function exchangeCode() {
       try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_DOMAIN}/oauth2callback?code=${code}`, {
-          method: "GET",
-          headers: {
-            "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
-          },
-        });
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_DOMAIN}/oauth2callback?code=${code}`,
+          {
+            method: "GET",
+            headers: {
+              "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
+            },
+          }
+        );
 
         if (!res.ok) {
           const text = await res.text();
@@ -32,7 +34,7 @@ export default function OAuth2Callback() {
 
         toast.success("✅ Google Drive connected successfully!");
 
-        // Notify parent window and close
+        // Notify parent window and close popup
         window.opener?.postMessage({ success: true, source: "google-oauth" }, "*");
         setTimeout(() => window.close(), 1000);
       } catch (err) {
@@ -49,5 +51,14 @@ export default function OAuth2Callback() {
       <h2>Connecting your Google Drive...</h2>
       <p>This will only take a moment.</p>
     </div>
+  );
+}
+
+export default function OAuth2Callback() {
+  // ✅ Wrap in Suspense to satisfy Next.js build
+  return (
+    <Suspense fallback={<div>Loading Google connection...</div>}>
+      <OAuth2CallbackInner />
+    </Suspense>
   );
 }
