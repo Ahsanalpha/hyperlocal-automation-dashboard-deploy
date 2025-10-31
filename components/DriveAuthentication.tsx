@@ -54,7 +54,7 @@ export default function DriveAuthentication({
       const response = await fetch(endpoint,{
         headers: {
           "Content-Type": "application/json",
-          "x-api-key": process.env.NEXT_PUBLIC_SECRET_HEADER || "",
+          "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
         },
       });
       if(response.status === 200) {
@@ -83,7 +83,7 @@ export default function DriveAuthentication({
       method: "GET",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": process.env.NEXT_PUBLIC_SECRET_HEADER || "", // must match backend API key
+        "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "", // must match backend API key
       },
     });
 
